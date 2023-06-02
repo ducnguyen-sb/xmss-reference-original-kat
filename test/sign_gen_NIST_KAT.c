@@ -12,8 +12,8 @@
 #include <ctype.h>
 #include <oqs/rand.h>
 
-#include "sign.h"
-#include "sign_params.h"
+#include "../sign.h"
+#include "../sign_params.h"
 
 #define MAX_MARKER_LEN      50
 
@@ -33,8 +33,8 @@ main() {
 	uint8_t             seed[48];
 	uint8_t             msg[3300];
 	uint8_t             entropy_input[48];
-	uint8_t             *m, *sm;
-	unsigned long long  mlen, smlen, max, remain;
+	uint8_t             *m, *sm, *m1;
+	unsigned long long  mlen, smlen, max, remain, mlen1;
 	int                 count;
 	int                 done;
 	uint8_t             pk[CRYPTO_PUBLICKEYBYTES] = {0}, sk[CRYPTO_SECRETKEYBYTES] = {0};
@@ -119,7 +119,7 @@ main() {
 	done = 0;
 	do {
 		if ( FindMarker(fp_req, "count = ") ) {
-			fscanf(fp_req, "%d", &count);
+			ret_val = fscanf(fp_req, "%d", &count);
 		} else {
 			done = 1;
 			break;
@@ -135,7 +135,7 @@ main() {
 		OQS_randombytes_nist_kat_init_256bit(seed, NULL);
 
 		if ( FindMarker(fp_req, "mlen = ") ) {
-			fscanf(fp_req, "%llu", &mlen);
+			ret_val = fscanf(fp_req, "%llu", &mlen);
 		} else {
 			printf("ERROR: unable to read 'mlen' from <%s>\n", fn_req);
 			return KAT_DATA_ERROR;
@@ -143,7 +143,8 @@ main() {
 		fprintf(fp_rsp, "mlen = %llu\n", mlen);
 
 		m = (uint8_t *)calloc(mlen, sizeof(uint8_t));
-		sm = (uint8_t *)calloc(CRYPTO_BYTES, sizeof(uint8_t));
+		m1 = (uint8_t *)calloc(CRYPTO_BYTES + mlen, sizeof(uint8_t));
+		sm = (uint8_t *)calloc(CRYPTO_BYTES + mlen, sizeof(uint8_t));
 
 		if ( !ReadHex(fp_req, m, (int)mlen, "msg = ") ) {
 			printf("ERROR: unable to read 'msg' from <%s>\n", fn_req);
@@ -160,8 +161,21 @@ main() {
 		fprintf(fp_rsp, "sklen = %u\n", CRYPTO_SECRETKEYBYTES);
 		fprintBstr(fp_rsp, "sk = ", sk, CRYPTO_SECRETKEYBYTES);
 
-		if ( (ret_val = crypto_sign_open(m, mlen, sm, smlen, pk)) != 0) {
+		if ( (ret_val = crypto_sign_open(m1, &mlen1, sm, smlen, pk)) != 0) {
 			printf("crypto_sign_open returned <%d>\n", ret_val);
+			return KAT_CRYPTO_FAILURE;
+		}
+
+		if (mlen1 != mlen)
+		{
+			printf("Incorrect message length\n");
+			return KAT_CRYPTO_FAILURE;
+		}
+		if (memcmp(m, m1, mlen))
+		{
+			fprintf(fp_rsp, "mlen1 = %llu\n", mlen1);
+			fprintBstr(fp_rsp, "m1 = ", m1, mlen1);
+			printf("Incorrect message content\n");
 			return KAT_CRYPTO_FAILURE;
 		}
 
