@@ -1,6 +1,9 @@
 CC = /usr/bin/gcc
 CFLAGS = -Wall -g -O3 -Wextra -Wpedantic
-LDLIBS = -lcrypto
+LIBOQS = -L/home/ubuntu/openssl/oqs/lib -I/home/ubuntu/openssl/oqs/include/
+OPENSSL = -L/home/linuxbrew/.linuxbrew/opt/openssl@1.1/lib -I/home/linuxbrew/.linuxbrew/opt/openssl@1.1/include
+
+LDLIBS =  $(LIBOQS) $(OPENSSL) -lcrypto -loqs
 
 SOURCES = params.c hash.c fips202.c hash_address.c randombytes.c wots.c xmss.c xmss_core.c xmss_commons.c utils.c
 HEADERS = params.h hash.h fips202.h hash_address.h randombytes.h wots.h xmss.h xmss_core.h xmss_commons.h utils.h
@@ -32,13 +35,9 @@ UI = ui/xmss_keypair \
 	 ui/xmssmt_sign_fast \
 	 ui/xmssmt_open_fast \
 
-KATS = test/sign_gen_NIST_KAT \
-	   test/sign_test_NIST_KAT \
-	   test/sign_gen_NIST_KAT_fast \
-	   test/sign_test_NIST_KAT_fast
+KATS = test/sign_gen_NIST_KAT
 
-KATS_FAST = test/sign_gen_NIST_KAT_fast \
-			test/sign_test_NIST_KAT_fast
+KATS_FAST = test/sign_gen_NIST_KAT_fast
 
 
 all: tests ui
@@ -57,19 +56,11 @@ test/%.exec: test/%
 
 test/sign_gen_NIST_KAT: sign.c sign_params.h sign.h test/sign_gen_NIST_KAT.c $(SOURCES) $(OBJS) $(HEADERS)
 	$(CC) $(CFLAGS) -o $@ $(SOURCES) test/sign_gen_NIST_KAT.c  -DXMSS_SECRETKEYBYTES_SMALL_ENABLE $< $(LDLIBS)
-	time $@
-
-test/sign_test_NIST_KAT: sign.c sign_params.h sign.h test/sign_test_NIST_KAT.c $(SOURCES) $(OBJS) $(HEADERS)
-	$(CC) $(CFLAGS) -o $@ $(SOURCES) test/sign_test_NIST_KAT.c  -DXMSS_SECRETKEYBYTES_SMALL_ENABLE $< $(LDLIBS)
-	time $@
+	$@
 
 test/sign_gen_NIST_KAT_fast: sign.c sign_params.h sign.h test/sign_gen_NIST_KAT.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
 	$(CC) $(CFLAGS) -o $@ $(SOURCES_FAST) test/sign_gen_NIST_KAT.c $< $(LDLIBS)
-	time $@
-
-test/sign_test_NIST_KAT_fast: sign.c sign_params.h sign.h test/sign_test_NIST_KAT.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
-	$(CC) $(CFLAGS) -o $@ $(SOURCES_FAST) test/sign_test_NIST_KAT.c $< $(LDLIBS)
-	time $@
+	$@
 
 test/xmss_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
 	$(CC) -DXMSS_SIGNATURES=1024 $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
@@ -113,4 +104,6 @@ ui/xmssmt_%: ui/%.c $(SOURCES) $(OBJS) $(HEADERS)
 clean:
 	-$(RM) $(TESTS)
 	-$(RM) test/vectors
+	-$(RM) $(KATS)
+	-$(RM) $(KATS_FAST)
 	-$(RM) $(UI)
