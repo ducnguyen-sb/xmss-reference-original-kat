@@ -31,6 +31,9 @@ int xmss_sign_open(unsigned char *m, unsigned long long *mlen,
                    const unsigned char *sm, unsigned long long smlen,
                    const unsigned char *pk);
 
+int xmss_remaining_signatures(unsigned long long *remain, const unsigned  char *sk);
+int xmss_total_signatures(unsigned long long *max, const unsigned  char *sk);
+
 /*
  * Generates a XMSSMT key pair for a given parameter set.
  * Format sk: [OID || (ceil(h/8) bit) idx || SK_SEED || SK_PRF || PUB_SEED || root]
@@ -58,4 +61,7 @@ int xmssmt_sign(unsigned char *sk,
 int xmssmt_sign_open(unsigned char *m, unsigned long long *mlen,
                      const unsigned char *sm, unsigned long long smlen,
                      const unsigned char *pk);
+
+int xmssmt_remaining_signatures(unsigned long long *remain, const unsigned  char *sk);
+int xmssmt_total_signatures(unsigned long long *max, const unsigned  char *sk);
 #endif
