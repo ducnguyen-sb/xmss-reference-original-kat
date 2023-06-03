@@ -12,13 +12,21 @@
 #define XMSSMT 0
 #endif
 
+#ifndef SHAKE
+#define SHAKE 0
+#endif
+
 #if XMSSMT == 0
     /* 
     * Maximum signatures: 2^h - 1 = 2^10 - 1
     */
     #if TREE_LEVEL == 0
 
-    #define XMSS_OID "XMSS-SHA2_10_256"
+    #if SHAKE == 1
+        #define XMSS_OID "XMSS-SHAKE_10_256"
+    #else
+        #define XMSS_OID "XMSS-SHA2_10_256"
+    #endif
 
     #define XMSS_PUBLICKEYBYTES 64
     #define XMSS_SECRETKEYBYTES_SMALL 132
@@ -31,7 +39,11 @@
     */
     #elif TREE_LEVEL == 1
 
-    #define XMSS_OID "XMSS-SHA2_16_256"
+    #if SHAKE == 1
+        #define XMSS_OID "XMSS-SHAKE_16_256"
+    #else
+        #define XMSS_OID "XMSS-SHA2_16_256"
+    #endif
 
     #define XMSS_PUBLICKEYBYTES 64
     #define XMSS_SECRETKEYBYTES_SMALL 132
@@ -44,7 +56,11 @@
     */
     #elif TREE_LEVEL == 2
 
-    #define XMSS_OID "XMSS-SHA2_20_256"
+    #if SHAKE == 1
+        #define XMSS_OID "XMSS-SHAKE_20_256"
+    #else
+        #define XMSS_OID "XMSS-SHA2_20_256"
+    #endif
 
     #define XMSS_PUBLICKEYBYTES 64
     #define XMSS_SECRETKEYBYTES_SMALL 132
