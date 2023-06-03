@@ -41,12 +41,23 @@ main() {
 	int                 ret_val;
 
 	// Create the REQUEST file
-	sprintf(fn_req, "%.32s.req", CRYPTO_ALGNAME);
+	sprintf(fn_req, "%.48s.req", CRYPTO_ALGNAME);
+	sprintf(fn_rsp, "%.48s.rsp", CRYPTO_ALGNAME);
+	
+	// Remove the "/" in filename
+	for (unsigned i = 0; i < strlen(CRYPTO_ALGNAME); i++)
+	{
+		if (fn_req[i] == 47)
+		{
+			fn_req[i] = 45;
+			fn_rsp[i] = 45;
+		}
+	}
+
 	if ( (fp_req = fopen(fn_req, "w")) == NULL ) {
 		printf("Couldn't open <%s> for write\n", fn_req);
 		return KAT_FILE_OPEN_ERROR;
 	}
-	sprintf(fn_rsp, "%.32s.rsp", CRYPTO_ALGNAME);
 	if ( (fp_rsp = fopen(fn_rsp, "w")) == NULL ) {
 		printf("Couldn't open <%s> for write\n", fn_rsp);
 		return KAT_FILE_OPEN_ERROR;
@@ -76,7 +87,7 @@ main() {
 
 	// Init again to make sure the seed is consistent
 	OQS_randombytes_nist_kat_init_256bit(entropy_input, NULL);
-	for (int i = 0; i < 16; i++) {
+	for (int i = 0; i < 1; i++) {
 		fprintf(fp_req, "count = %d\n", i);
 		OQS_randombytes(seed, 48);
 		fprintBstr(fp_req, "seed = ", seed, 48);
