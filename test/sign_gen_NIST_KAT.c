@@ -81,15 +81,22 @@ main() {
 		printf("crypto_sign_keypair returned <%d>\n", ret_val);
 		return KAT_CRYPTO_FAILURE;
 	}
+	fprintf(fp_req, "# %s\n\n", CRYPTO_ALGNAME);
 	fprintBstr(fp_req, "pk = ", pk, CRYPTO_PUBLICKEYBYTES);
 	fprintBstr(fp_req, "sk = ", sk, CRYPTO_SECRETKEYBYTES);
 	fprintf(fp_req, "\n\n");
 
+	for (int i = 0; i < 48; i++) {
+		entropy_input[i] = i + 10;
+	}
+
 	// Init again to make sure the seed is consistent
 	OQS_randombytes_nist_kat_init_256bit(entropy_input, NULL);
-	for (int i = 0; i < 1; i++) {
+	for (int i = 0; i < 10; i++) {
 		fprintf(fp_req, "count = %d\n", i);
 		OQS_randombytes(seed, 48);
+		// Make sure to msg is the first thing we read from randombytes
+		OQS_randombytes_nist_kat_init_256bit(seed, NULL);
 		fprintBstr(fp_req, "seed = ", seed, 48);
 		mlen = 33 * (i + 1);
 		fprintf(fp_req, "mlen = %llu\n", mlen);
@@ -97,10 +104,10 @@ main() {
 		fprintBstr(fp_req, "msg = ", msg, mlen);
 		fprintf(fp_req, "smlen =\n");
 		fprintf(fp_req, "sm =\n");
-		fprintf(fp_req, "sklen =\n");
-		fprintf(fp_req, "sk =\n");
 		fprintf(fp_req, "remain =\n");
-		fprintf(fp_req, "max =\n\n");
+		fprintf(fp_req, "max =\n");
+		fprintf(fp_req, "sklen =\n");
+		fprintf(fp_req, "sk =\n\n\n");
 	}
 	fclose(fp_req);
 
@@ -169,8 +176,6 @@ main() {
 		}
 		fprintf(fp_rsp, "smlen = %llu\n", smlen);
 		fprintBstr(fp_rsp, "sm = ", sm, smlen);
-		fprintf(fp_rsp, "sklen = %u\n", CRYPTO_SECRETKEYBYTES);
-		fprintBstr(fp_rsp, "sk = ", sk, CRYPTO_SECRETKEYBYTES);
 
 		if ( (ret_val = crypto_sign_open(m1, &mlen1, sm, smlen, pk)) != 0) {
 			printf("crypto_sign_open returned <%d>\n", ret_val);
@@ -202,12 +207,16 @@ main() {
 			return KAT_CRYPTO_FAILURE;
 		}
 
-		fprintf(fp_rsp, "max = %llu\n\n", max);
+		fprintf(fp_rsp, "max = %llu\n", max);
 
 		if (max - remain != (unsigned long long) count + 1) {
 			printf("secret key update failed\n");
 			return KAT_CRYPTO_FAILURE;
 		}
+
+		fprintf(fp_rsp, "sklen = %u\n", CRYPTO_SECRETKEYBYTES);
+		fprintBstr(fp_rsp, "sk = ", sk, CRYPTO_SECRETKEYBYTES);
+		fprintf(fp_rsp, "\n\n");
 
 		free(m);
 		free(sm);
