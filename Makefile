@@ -1,7 +1,7 @@
 CC = /usr/bin/gcc
 CFLAGS = -Wall -g -O3 -Wextra -Wpedantic
-LIBOQS = -L/home/ubuntu/openssl/oqs/lib -I/home/ubuntu/openssl/oqs/include/
-OPENSSL = -L/home/linuxbrew/.linuxbrew/opt/openssl@1.1/lib -I/home/linuxbrew/.linuxbrew/opt/openssl@1.1/include
+LIBOQS = -L/Users/ductri.nguyen/Work/openssl/oqs/lib -I/Users/ductri.nguyen/Work/openssl/oqs/include/
+OPENSSL = -L/opt/homebrew/opt/openssl@1.1/lib -I/opt/homebrew/opt/openssl@1.1/include
 
 LDLIBS =  $(LIBOQS) $(OPENSSL) -lcrypto -loqs
 
