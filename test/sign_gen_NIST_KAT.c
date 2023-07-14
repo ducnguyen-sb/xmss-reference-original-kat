@@ -214,8 +214,8 @@ main() {
 			return KAT_CRYPTO_FAILURE;
 		}
 
-		fprintf(fp_rsp, "sklen = %u\n", CRYPTO_SECRETKEYBYTES);
-		fprintBstr(fp_rsp, "sk = ", sk, CRYPTO_SECRETKEYBYTES);
+		// fprintf(fp_rsp, "sklen = %u\n", CRYPTO_SECRETKEYBYTES);
+		// fprintBstr(fp_rsp, "sk = ", sk, CRYPTO_SECRETKEYBYTES);
 		fprintf(fp_rsp, "\n\n");
 
 		free(m);
